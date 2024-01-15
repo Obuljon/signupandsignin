@@ -16,18 +16,20 @@ import { hash, compare } from "bcrypt";
 import { AuthService } from "../services/auth.service";
 import { SignupDTO, SigninDTO } from "src/dto";
 import { JwtService } from "@nestjs/jwt";
-import { AuthGuard } from "../middleware/authguard";
+import { AuthGuard } from "../middleware";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private jwtService: JwtService,
+    private jwtService: JwtService
   ) {}
 
   @Post("signup")
   async signup(@Body() user: SignupDTO) {
     const { name, email, password } = user;
+    const isEmail = await this.authService.findOneUserEmail(email);
+    if (isEmail) throw new BadRequestException("This email is busy");
     const hashpassword = await hash(password, 10);
     const result = this.authService.addUser({
       name,
@@ -52,6 +54,12 @@ export class AuthController {
     }
 
     throw new BadRequestException("login or password error");
+  }
+
+  @UseGuards(AuthGuard)
+  @Get("/authtest")
+  authtest() {
+    return true;
   }
 
   @UseGuards(AuthGuard)
