@@ -1,16 +1,20 @@
-require("dotenv").config();
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
-import { ValidationPipe } from "@nestjs/common";
-const PORT = process.env.PORT;
+require("dotenv").config()
+import { NestFactory } from "@nestjs/core"
+import { AppModule } from "./app.module"
+import { Logger, ValidationPipe } from "@nestjs/common"
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: "http://localhost:8080",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-  });
-  app.useGlobalPipes(new ValidationPipe());
-  await app.listen(PORT, () => console.log(`server in run port:${PORT}`));
+    const PORT = process.env.PORT
+    const logger: Logger = new Logger("Server")
+
+    const app = await NestFactory.create(AppModule)
+    app.enableCors({
+        origin: process.env.CLENT_URL,
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        credentials: true,
+    })
+    app.useGlobalPipes(new ValidationPipe())
+    await app.listen(PORT, () =>
+        logger.log(`Running on port:${PORT}`),
+    )
 }
-bootstrap();
+bootstrap()
